@@ -8,11 +8,9 @@
 
 #include "notstdtypetraits.h"
 
-#include <unordered_map>
-
 namespace notstd
 {
-    static auto hasNeededMembers = is_valid([](const auto& t) -> decltype(
+    static auto hasNeededMembers = is_valid([](auto&& t) -> decltype(
         t.size(),
         t.max_size(),
         t.begin(),
@@ -26,26 +24,27 @@ namespace notstd
         t.erase(),
         t.clear()) {});
 
-    template<class MapType, class Key, class T, class Hash = hash<Key>, class Pred = equal_to<Key>, class Alloc = allocator< std::pair<const Key, T> > >
+    template<template<class, class, class, class, class> class MapType, class Key, class T, class Hash = std::hash<Key>, class Pred = std::equal_to<Key>, class Alloc = std::allocator< std::pair<const Key, T>>>
     class bidir_map
     {
     public:
-        static_assert(hasNeededMembers(std::declval(MapType)), "MapType backing bidir_map does not have all the needed member functions");
-
         //Constructors
+        using MapType_t = MapType<Key, T, Hash, Pred, Alloc>;
+        using MapType_r_t = MapType<T, Key, Hash, Pred, Alloc>;
 
         //TODO more than just two constructors
-        bidir_map() : m_forwardMap(), m_reverseMap()
+        bidir_map()
         {
         }
 
         bidir_map(size_t n,
-                  const MapType::hasher& hf = MapType::hasher(),
-                  const MapType::key_equal& eql = MapType::key_equal(),
-                  const allocator_type& alloc = MapType::allocator_type()) :
-            m_forwardMap(MapType(n, hf, eql, alloc)),
-            m_reverseMap(MapType(n, hf, eql, alloc))
+                  const typename MapType_t::hasher& hf = MapType_t::hasher(),
+                  const typename MapType_t::key_equal& eql = MapType_t::key_equal(),
+                  const typename MapType_t::allocator_type& alloc = MapType_t::allocator_type()) :
+            m_forwardMap(MapType_t(n, hf, eql, alloc)),
         {
+            static_assert(hasNeededMembers(std::declval(decltype(this)::m_forwardMap)), "MapType backing bidir_map does not have all the needed member functions");
+            m_reverseMap(MapType_r_t(n, hf, eql, alloc));
         }
 
         // Capacity
@@ -97,19 +96,11 @@ namespace notstd
         }
 
         // Access
-        T& at(const Key& k)
+        const T& at(const Key& k) const
         {
             return m_forwardMap.at(k);
         }
-        const T& at(Key& k) const
-        {
-            return m_forwardMap.at(k);
-        }
-        Key& reverse_at(const T& v)
-        {
-            returm m_reverseMap.at(v);
-        }
-        const Key& reverse_at(T& v) const
+        const Key& reverse_at(const T& v) const
         {
             return m_reverseMap.at(v);
         }
@@ -142,6 +133,12 @@ namespace notstd
             m_forwardMap.erase(k);
             m_reverseMap.erase(v);
         }
+        void reverse_erase(const T& v)
+        {
+            auto k = m_reverseMap[v];
+            m_forwardMap.erase(k);
+            m_reverseMap.erase(v);
+        }
         void clear()
         {
             m_forwardMap.clear();
@@ -149,12 +146,12 @@ namespace notstd
         }
 
     private:
-        MapType<Key, T> m_forwardMap;
-        MapType<T, Key> m_reverseMap;
+        MapType_t m_forwardMap;
+        MapType_r_t m_reverseMap;
     };
 
-    template<class Key, class T, class Hash = hash<Key>, class Pred = equal_to<Key>, class Alloc = allocator< std::pair<const Key, T> > >
-    using unordered_bidir_map = bidir_map<std::unordered_map<Key, T, Hash, Pred, Alloc>>;
+    template<class Key, class T, class Hash = std::hash<Key>, class Pred = std::equal_to<Key>, class Alloc = std::allocator< std::pair<const Key, T> > >
+    using unordered_bidir_map = bidir_map<std::unordered_map, Key, T, Hash, Pred, Alloc>;
 } /*notstd*/
 
 #endif

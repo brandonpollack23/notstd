@@ -13,28 +13,28 @@ namespace notstd
         //sfinae will cause this specialization to fail and cascade to the next function def
         //if there is not a valid type returning from ClassUnderTest being passed to the templated functor
         //this happens if there is no such method specified by the TemplatedFunctor inside of the ClassUnderTest
-        template<class ClassUnderTest>
-        constexpr auto testValidity(int /*unused*/) -> decltype(std::declval<TemplatedFunctor>()(std::declval<ClassUnderTest>()), std::true_type())
+        template<class... MembersUnderTest>
+        constexpr auto testValidity(int /*unused*/) -> decltype(std::declval<TemplatedFunctor>()(std::declval<MembersUnderTest>()...), std::true_type())
         {
             return std::true_type();
         }
 
         // ... is always lowest priority for overloads
-        template<class Param>
+        template<class... MembersUnderTest>
         constexpr auto testValidity(...) -> std::false_type
         {
             return std::false_type();
         }
     public:
-        template<class ClassUnderTest>
-        constexpr auto operator()(const ClassUnderTest& p)
+        template<class... MembersUnderTest>
+        constexpr auto operator()(MembersUnderTest&&...)
         {
-            return testValidity<ClassUnderTest>(int());
+            return testValidity<MembersUnderTest...>(int());
         }
     };
 
     template<class TemplatedFunctor>
-    constexpr auto is_valid(const TemplatedFunctor& t)
+    constexpr auto is_valid(const TemplatedFunctor&& t)
     {
         //inject the TemplatedFunctor into the member checker
         //the MemberChecker (a meta Functor on it's own) () operator will then attempt to call 
