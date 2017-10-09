@@ -43,7 +43,7 @@ namespace notstd
                   const typename MapType_t::allocator_type& alloc = MapType_t::allocator_type()) :
             m_forwardMap(MapType_t(n, hf, eql, alloc)),
         {
-            static_assert(hasNeededMembers(std::declval(decltype(this)::m_forwardMap)), "MapType backing bidir_map does not have all the needed member functions");
+            static_assert(hasNeededMembers(std::declval(MapType_t){}), "MapType backing bidir_map does not have all the needed member functions");
             m_reverseMap(MapType_r_t(n, hf, eql, alloc));
         }
 
