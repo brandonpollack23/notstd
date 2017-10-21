@@ -5,34 +5,22 @@
 #include <utility>
 #include <memory>
 #include <functional>
+#include <unordered_map>
 
 #include "notstdtypetraits.h"
 
 namespace notstd
 {
-    static auto hasNeededMembers = is_valid([](auto&& t) -> decltype(
-        t.size(),
-        t.max_size(),
-        t.begin(),
-        t.cbegin(),
-        t.end(),
-        t.cend(),
-        t.operator[],
-        t.at(),
-        t.find(),
-        t.insert(),
-        t.erase(),
-        t.clear()) {});
-
     template<template<class, class, class, class, class> class MapType, class Key, class T, class Hash = std::hash<Key>, class Pred = std::equal_to<Key>, class Alloc = std::allocator< std::pair<const Key, T>>>
     class bidir_map
     {
     public:
-        //Constructors
+        //needed types
         using MapType_t = MapType<Key, T, Hash, Pred, Alloc>;
         using MapType_r_t = MapType<T, Key, Hash, Pred, Alloc>;
 
         //TODO more than just two constructors
+        //Constructors
         bidir_map()
         {
         }
@@ -41,10 +29,24 @@ namespace notstd
                   const typename MapType_t::hasher& hf = MapType_t::hasher(),
                   const typename MapType_t::key_equal& eql = MapType_t::key_equal(),
                   const typename MapType_t::allocator_type& alloc = MapType_t::allocator_type()) :
-            m_forwardMap(MapType_t(n, hf, eql, alloc)),
+            m_forwardMap(MapType_t(n, hf, eql, alloc))
         {
-            static_assert(hasNeededMembers(std::declval(MapType_t){}), "MapType backing bidir_map does not have all the needed member functions");
-            m_reverseMap(MapType_r_t(n, hf, eql, alloc));
+            static auto hasNeededMembers = is_valid([](auto&& t) -> decltype(
+                t.size(),
+                t.max_size(),
+                t.begin(),
+                t.cbegin(),
+                t.end(),
+                t.cend(),
+                t.operator[](std::declval<Key>()),
+                t.at(std::declval<const Key>()),
+                t.find(std::declval<const Key>()),
+                /*t.insert(std::declval<std::pair<const Key, T>()),*/ //I think this is a bug, casuses compiler to lose heap space 
+                t.erase(std::declval<const Key>()),
+                t.clear()) {});
+
+            static_assert(decltype(hasNeededMembers(m_forwardMap))::value, "MapType backing bidir_map does not have all the needed member functions");
+            m_reverseMap = MapType_r_t(n, hf, eql, alloc);
         }
 
         // Capacity
@@ -122,6 +124,14 @@ namespace notstd
         }
 
         // Modification
+        T& operator[](const Key& k)
+        {
+           return m_forwardMap[k];
+        }
+        const T& operator[](const Key& k) const
+        {
+           return m_forwardMap[k];
+        }
         void put(const Key& k, const T& v)
         {
             m_forwardMap[k] = v;
