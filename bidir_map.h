@@ -124,14 +124,6 @@ namespace notstd
         }
 
         // Modification
-        T& operator[](const Key& k)
-        {
-           return m_forwardMap[k];
-        }
-        const T& operator[](const Key& k) const
-        {
-           return m_forwardMap[k];
-        }
         void put(const Key& k, const T& v)
         {
             m_forwardMap[k] = v;
