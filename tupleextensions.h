@@ -5,6 +5,24 @@
 
 namespace notstd
 {
+    /*Get N Param*/
+    template<std::size_t N, class... Params>
+    struct get_n_param;
+
+    // Base case, N is 0
+    template<class T, class... Params>
+    struct get_n_param<0, T, Params...>
+    {
+        using type = T;
+    };
+
+    // recursive step
+    template<std::size_t N, class T, class... Params>
+    struct get_n_param<N, T, Params...>
+    {
+        using type = typename get_n_param<N - 1, Params...>::type;
+    };
+
     /*tuple has type*/
     template<class T, class... Types>
     struct param_pack_has_type;
@@ -16,18 +34,18 @@ namespace notstd
         static constexpr bool value = true;
     };
 
-    // Base Case: tuple list is empty :(
-    template<class T, class... Types>
-    struct param_pack_has_type<T, std::tuple<>>
-    {
-        static constexpr bool value = false;
-    };
-
     // Recurse, first element not it
     template<class T, class U, class... Types>
     struct param_pack_has_type<T, U, Types...>
     {
         static constexpr bool value = param_pack_has_type<T, Types...>::value;
+    };
+
+    // Base Case: tuple list is empty :(
+    template<class T>
+    struct param_pack_has_type<T>
+    {
+        static constexpr bool value = false;
     };
 
     /*tuple type to index*/
@@ -45,7 +63,7 @@ namespace notstd
     template<class T, class U, class... Types>
     struct type_to_index<T, std::tuple<U, Types...>>
     {
-        static_assert(param_pack_has_type<T, Types...>::value, "The tuple does not have the given type")
+        static_assert(param_pack_has_type<T, Types...>::value, "The tuple does not have the given type");
         static constexpr std::size_t value = 1 + type_to_index<T, std::tuple<Types...>>::value;
     };
 
