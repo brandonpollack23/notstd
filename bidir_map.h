@@ -26,9 +26,9 @@ namespace notstd
         }
 
         bidir_map(size_t n,
-                  const typename MapType_t::hasher& hf = MapType_t::hasher(),
-                  const typename MapType_t::key_equal& eql = MapType_t::key_equal(),
-                  const typename MapType_t::allocator_type& alloc = MapType_t::allocator_type()) :
+                  const typename MapType_t::hasher& hf = typename MapType_t::hasher{},
+                  const typename MapType_t::key_equal& eql = typename MapType_t::key_equal{},
+                  const typename MapType_t::allocator_type& alloc = typename MapType_t::allocator_type{}) :
             m_forwardMap(MapType_t(n, hf, eql, alloc))
         {
             static auto hasNeededMembers = is_valid([](auto&& t) -> decltype(
