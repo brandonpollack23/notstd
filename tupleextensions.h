@@ -5,24 +5,6 @@
 
 namespace notstd
 {
-    /*Get N Param*/
-    template<std::size_t N, class... Params>
-    struct get_n_param;
-
-    // Base case, N is 0
-    template<class T, class... Params>
-    struct get_n_param<0, T, Params...>
-    {
-        using type = T;
-    };
-
-    // recursive step
-    template<std::size_t N, class T, class... Params>
-    struct get_n_param<N, T, Params...>
-    {
-        using type = typename get_n_param<N - 1, Params...>::type;
-    };
-
     /*tuple has type*/
     template<class T, class... Types>
     struct param_pack_has_type;
@@ -49,7 +31,7 @@ namespace notstd
     };
 
     /*tuple type to index*/
-    template<class T, class Tuple>
+    template<class T, class... Tuple>
     struct type_to_index;
 
     // base case: first element of tuple matches T, the type we seek
@@ -67,6 +49,24 @@ namespace notstd
         static constexpr std::size_t value = 1 + type_to_index<T, std::tuple<Types...>>::value;
     };
 
+    /*tuple index to type*/
+    template<int i, class... Types>
+    struct index_to_type;
+
+    // base case: i is 0
+    template<class T, class... Types>
+    struct index_to_type<0, T, Types...>
+    {
+        using type = T;
+    };
+
+    // recursive stop, i > 0
+    template<int i, class T, class... Types>
+    struct index_to_type<i, T, Types...>
+    {
+        using type = typename index_to_type<i - 1, Types...>::type;
+    };
+
     /*are all tuple elements unique*/
     template<class... Types>
     struct ensure_parameter_pack_unique;
@@ -78,7 +78,6 @@ namespace notstd
         static constexpr bool value = true;
     };
 
-    //TODO fuck this doesnt work right
     template<class T, class... Types>
     struct ensure_parameter_pack_unique<T, Types...>
     {
