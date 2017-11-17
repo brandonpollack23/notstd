@@ -1,3 +1,6 @@
+
+/**@file*/
+
 #ifndef __NOTSTD_BIDIR_MAP__
 #define __NOTSTD_BIDIR_MAP__
 
@@ -11,12 +14,25 @@
 
 namespace notstd
 {
+    /**bidirectional map that can be backed by any map class
+     * all calls are the same as std::*map (eg std::unordered_map) just with added reverse_*
+     * functions
+     *
+     * @tparam MapType a template template parameter of the backing map type
+     * @tparam Key key type
+     * @tparam T the value type
+     * @tparam Hash the hasher (defaults to std::hash<Key>)
+     * @tparam Pred the Predicate (equivalence test) (defaults to std::equal_to<Key>)
+     * @tparam Alloc the allocation scheme (defaults to std::allocator<std::pair<const Key, T>>)
+     *
+     * */
     template<template<class, class, class, class, class> class MapType, class Key, class T, class Hash = std::hash<Key>, class Pred = std::equal_to<Key>, class Alloc = std::allocator< std::pair<const Key, T>>>
     class bidir_map
     {
     public:
-        //needed types
+        /**forward map type*/
         using MapType_t = MapType<Key, T, Hash, Pred, Alloc>;
+        /**reverse lookup map type*/
         using MapType_r_t = MapType<T, Key, Hash, Pred, Alloc>;
 
         //TODO more than just two constructors
@@ -25,6 +41,7 @@ namespace notstd
         {
         }
 
+        /**constructor that takes in non default hasher, predicate, allocator, and size*/
         bidir_map(size_t n,
                   const typename MapType_t::hasher& hf = typename MapType_t::hasher{},
                   const typename MapType_t::key_equal& eql = typename MapType_t::key_equal{},
@@ -148,10 +165,11 @@ namespace notstd
         }
 
     private:
-        MapType_t m_forwardMap;
-        MapType_r_t m_reverseMap;
+        MapType_t m_forwardMap;   ///< The forward map
+        MapType_r_t m_reverseMap; ///< the reverse map for inverse O(1) lookup
     };
 
+    /**specialization for unorderd_map backed bidir_map*/
     template<class Key, class T, class Hash = std::hash<Key>, class Pred = std::equal_to<Key>, class Alloc = std::allocator< std::pair<const Key, T> > >
     using unordered_bidir_map = bidir_map<std::unordered_map, Key, T, Hash, Pred, Alloc>;
 } /*notstd*/

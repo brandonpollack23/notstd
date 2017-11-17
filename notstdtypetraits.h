@@ -1,3 +1,6 @@
+
+/**@file*/
+
 #ifndef __NOTSTD_TYPETRAITS__
 #define __NOTSTD_TYPETRAITS__
 
@@ -6,6 +9,15 @@
 
 namespace notstd
 {
+    /** Meta Function that is used to expose a function that will allow us to use Template Meta
+     * Programming to have a constant integral_type returned that tells us if we do or do not have a
+     * member in a class/type (std::true_type if they are all accessable, std::false_type if they
+     * aren't)
+     *
+     * this stuff is not easy, if you want a full understanding read this:
+     * https://jguegant.github.io/blogs/tech/sfinae-introduction.html
+     * 
+     * @tparam TemplatedFunctor a templated lambda which attempts to run or access the required members*/
     template<class TemplatedFunctor>
     struct MemberChecker
     {
@@ -33,6 +45,9 @@ namespace notstd
         }
     };
 
+    /**This function takes in an auto lambda (templated functor) that tries to access all the
+     * members you need of a type, and returns an integral_type if they are all usable, this is all
+     * for compile time introspection*/
     template<class TemplatedFunctor>
     constexpr auto is_valid(const TemplatedFunctor&& t)
     {

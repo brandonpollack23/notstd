@@ -6,6 +6,7 @@
 namespace notstd
 {
     /*tuple has type*/
+    /**check if a variadic template paramater pack has a specified type*/
     template<class T, class... Types>
     struct param_pack_has_type;
 
@@ -31,6 +32,7 @@ namespace notstd
     };
 
     /*tuple type to index*/
+    /**Convert a tuples type to the index of the first instance of that type*/
     template<class T, class... Tuple>
     struct type_to_index;
 
@@ -50,6 +52,7 @@ namespace notstd
     };
 
     /*tuple index to type*/
+    /**Convert a tuples type index to the type at that index*/
     template<int i, class... Types>
     struct index_to_type;
 
@@ -68,6 +71,7 @@ namespace notstd
     };
 
     /*are all tuple elements unique*/
+    /**Determine if all the parameters in a variadic template parameter pack are unique*/
     template<class... Types>
     struct ensure_parameter_pack_unique;
 
