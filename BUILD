@@ -1,5 +1,7 @@
 cc_library(
     name = "notstd",
-    srcs = glob(["include/*.h"]),
+    hdrs = glob(["include/*.h"]),
+    include_prefix = "notstd",
+    strip_include_prefix = "include",
     visibility = ["//visibility:public"],
 )
