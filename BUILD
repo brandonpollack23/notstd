@@ -1,3 +1,5 @@
+licenses=["notice"]
+
 cc_library(
     name = "notstd",
     hdrs = glob(["include/*.h"]),
